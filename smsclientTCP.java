@@ -12,6 +12,7 @@ public class smsclientTCP {
         String IPAddress = args[0];
         int portNum = Integer.parseInt(args[1]);
         ArrayList<String> smsMessage = new ArrayList<String>();
+        OutputStreamWriter osw;
 
         Scanner sc2 = null;
         try {
@@ -36,6 +37,8 @@ public class smsclientTCP {
             Socket clientSocket = new Socket(IPAddress, portNum);
             DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
             BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            osw =new OutputStreamWriter(clientSocket.getOutputStream(), "UTF-8");
+
             //sentence = inFromUser.readLine();
 
             String str = "";
@@ -44,7 +47,8 @@ public class smsclientTCP {
             }
 
 
-            outToServer.writeBytes(str);
+            outToServer.writeBytes(str + '\n');
+            osw.write(str, 0, str.length());
             modifiedSentence = inFromServer.readLine();
             System.out.println("FROM SERVER: " + modifiedSentence);
             clientSocket.close();

@@ -3,6 +3,9 @@ import java.util.ArrayList;
 import java.util.Scanner;
 import java.io.*;
 import java.net.*;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.regex.PatternSyntaxException;
 
 
 /**
@@ -13,8 +16,10 @@ public class smsengineTCP {
     public static void main(String args[]){
         int portNum = Integer.parseInt(args[0]);
         ArrayList<String> susWords = new ArrayList<String>();
+        //Set<String> susWords = new LinkedHashSet<String>();
         int spamScore = 0;
        String susWordsInSMS = "";
+        OutputStreamWriter osw;
 
         Scanner sc2 = null;
         try {
@@ -27,14 +32,12 @@ public class smsengineTCP {
             while (s2.hasNext()) {
                 String s = s2.next();
                 susWords.add(s);
-                System.out.println(s);
             }
         }
 
         try {
             ServerSocket welcomeSocket = new ServerSocket(portNum);
-            String clientSentence;
-            String capitalizedSentence;
+            String clientSentence ="";
 
             while(true)
             {
@@ -44,18 +47,24 @@ public class smsengineTCP {
                 DataOutputStream outToClient = new DataOutputStream(connectionSocket.getOutputStream());
                 clientSentence = inFromClient.readLine();
                 System.out.println("Received: " + clientSentence);
+                String[] splitArray = clientSentence.split("\\s+");
+
 
                 for(String word:susWords){
                     if(clientSentence.toLowerCase().contains(word.toLowerCase())){
-                        if(!susWords.contains(word)) {
-                            susWordsInSMS = susWordsInSMS + " " + word;
+                        susWordsInSMS = susWordsInSMS + " " + word;
+                        for(int i = 0; i < splitArray.length ; i++){
+                            if(splitArray[i].equals(word)){
+                                spamScore++;
+                            }
                         }
-                        spamScore++;
                     }
                 }
-
-                capitalizedSentence = "" + susWords.size() + " " + spamScore + susWordsInSMS;
-                outToClient.writeBytes(capitalizedSentence);
+                System.out.println(susWordsInSMS);
+                String str = "" + susWords.size() + " " + spamScore + " " + susWordsInSMS + '\n';
+                outToClient.writeBytes(str);
+                osw =new OutputStreamWriter(connectionSocket.getOutputStream(), "UTF-8");
+                osw.write(str, 0, str.length());
                 spamScore = 0;
             }
         }catch(IOException e) {
