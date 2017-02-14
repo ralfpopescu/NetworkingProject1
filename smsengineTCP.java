@@ -14,9 +14,11 @@ import java.util.regex.PatternSyntaxException;
 public class smsengineTCP {
 
     public static void main(String args[]){
+
+        String badInput = "0 -1 ERROR";
+
         int portNum = Integer.parseInt(args[0]);
         ArrayList<String> susWords = new ArrayList<String>();
-        //Set<String> susWords = new LinkedHashSet<String>();
         int spamScore = 0;
        String susWordsInSMS = "";
         OutputStreamWriter osw;
@@ -50,6 +52,8 @@ public class smsengineTCP {
                 String[] splitArray = clientSentence.split("\\s+");
 
 
+
+
                 for(String word:susWords){
                     if(clientSentence.toLowerCase().contains(word.toLowerCase())){
                         susWordsInSMS = susWordsInSMS + " " + word;
@@ -60,8 +64,16 @@ public class smsengineTCP {
                         }
                     }
                 }
+
                 System.out.println(susWordsInSMS);
-                String str = "" + susWords.size() + " " + spamScore + " " + susWordsInSMS + '\n';
+                float spamScoreFloat = (float)(splitArray.length) / (float)spamScore;
+
+                String str = "" + susWords.size() + " " + spamScoreFloat + " " + susWordsInSMS + '\n';
+
+                if(splitArray.length > 1000 || splitArray.length == 0){
+                    str = badInput;
+                }
+
                 outToClient.writeBytes(str);
                 osw =new OutputStreamWriter(connectionSocket.getOutputStream(), "UTF-8");
                 osw.write(str, 0, str.length());
